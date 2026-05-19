@@ -21,7 +21,7 @@ npm run build
 
 Build output is written to `dist/`.
 
-## Preview of production build
+## Preview production build
 
 ```bash
 npm run preview
