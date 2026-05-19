@@ -1,0 +1,1 @@
+export function ControlStrip({onExport}:{onExport:(f:'csv'|'json')=>void}){return <div className='strip'><button>-15 min</button><button>-5 min</button><button>+5 min</button><button>+15 min</button><button onClick={()=>onExport('csv')}>CSV</button><button onClick={()=>onExport('json')}>JSON</button><button>PNG</button></div>}

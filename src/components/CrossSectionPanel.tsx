@@ -1,0 +1,5 @@
+import { ThresholdResult } from '../types';
+export function CrossSectionPanel({results}:{results:ThresholdResult[]}){ const w=760,h=380,xMin=-1000,xMax=1000,yMin=0,yMax=500; const sx=(x:number)=>((x-xMin)/(xMax-xMin))*w; const sy=(y:number)=>h-((y-yMin)/(yMax-yMin))*h;
+return <div className='panel'><h3>Vertical Cross-Section</h3><svg width={w} height={h}>{results.map(r=><polyline key={r.threshold.key} fill='none' stroke={r.threshold.color} strokeWidth={2} points={r.curve.map(p=>`${sx(p.x)},${sy(p.z)}`).join(' ')}/>)}<line x1={sx(0)} y1={0} x2={sx(0)} y2={h} stroke='#666' strokeDasharray='4 4'/></svg>
+<table><thead><tr><th>Threshold</th><th>Ground intersection distance [km]</th><th>Ground angle [deg]</th><th>Angle at 90 km [deg]</th><th>Angle at 110 km [deg]</th><th>Status</th></tr></thead>
+<tbody>{results.map(r=><tr key={r.threshold.key}><td>{r.threshold.label}</td><td>{r.xGroundKm.toFixed(2)}</td><td>{r.groundAngleDeg?.toFixed(2)??'N/A'}</td><td>{r.angleAt90Deg?.toFixed(2)??'N/A'}</td><td>{r.angleAt110Deg?.toFixed(2)??'N/A'}</td><td>{r.status}</td></tr>)}</tbody></table></div>}
