@@ -1,0 +1,1 @@
+export const download = (filename:string,text:string,type:string)=>{ const blob=new Blob([text],{type}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=filename; a.click(); URL.revokeObjectURL(a.href); };

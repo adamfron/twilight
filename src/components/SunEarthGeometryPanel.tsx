@@ -1,0 +1,1 @@
+export function SunEarthGeometryPanel(){return <div className='panel small'><h4>Sun–Earth Geometry</h4><button>Enlarge</button><svg width='100%' height='170'><circle cx='90' cy='90' r='45' fill='#cde'/><line x1='5' y1='90' x2='45' y2='90' stroke='orange' strokeWidth='3'/></svg></div>}
