@@ -1,19 +1,27 @@
-export function SunEarthGeometryPanel({ crossAz, solarAz, onEnlarge }: { crossAz: number; solarAz: number; onEnlarge: () => void }) {
-  return <div className='panel'><div className='panelHeader'><h4>Sun–Earth Geometry</h4><button onClick={onEnlarge}>Enlarge</button></div><svg viewBox='0 0 520 300' preserveAspectRatio='xMidYMid meet'>
-    <defs><linearGradient id='earth' x1='0%' y1='0%' x2='100%' y2='0%'><stop offset='0%' stopColor='#c7d2fe' /><stop offset='49%' stopColor='#bfdbfe' /><stop offset='51%' stopColor='#334155' /><stop offset='100%' stopColor='#0f172a' /></linearGradient><marker id='arr' viewBox='0 0 10 10' refX='9' refY='5' markerWidth='7' markerHeight='7' orient='auto-start-reverse'><path d='M 0 0 L 10 5 L 0 10 z' fill='#0891b2' /></marker></defs>
-    {[30, 70, 110, 150, 190].map(y => <line key={y} x1='12' y1={y} x2='140' y2={y} stroke='#f59e0b' strokeWidth='2' />)}
-    <text x='12' y='20' fontSize='11' fill='#92400e'>incoming sunlight</text>
-    <circle cx='220' cy='150' r='110' fill='url(#earth)' stroke='#1e3a8a' strokeWidth='2' />
-    <line x1='220' y1='40' x2='220' y2='260' stroke='#64748b' strokeDasharray='4 4' />
-    <circle cx='305' cy='115' r='5' fill='#ef4444' />
-    <text x='314' y='113' fontSize='11'>station</text>
-    <line x1='305' y1='115' x2='350' y2='70' stroke='#4f46e5' strokeWidth='2' markerEnd='url(#arr)' />
-    <text x='355' y='68' fontSize='11'>local vertical</text>
-    <line x1='305' y1='115' x2='420' y2='115' stroke='#0891b2' strokeWidth='2' markerEnd='url(#arr)' />
-    <text x='422' y='118' fontSize='11'>cross-section direction</text>
-    <line x1='305' y1='115' x2='400' y2='170' stroke='#16a34a' strokeWidth='2' markerEnd='url(#arr)' />
-    <text x='403' y='174' fontSize='11'>terminator front</text>
-    <text x='16' y='286' fontSize='12'>cross-section azimuth: {crossAz.toFixed(1)}°</text>
-    <text x='230' y='286' fontSize='12'>solar azimuth: {solarAz.toFixed(1)}°</text>
-  </svg></div>;
+import { useContainerSize } from './useContainerSize';
+
+export function SunEarthGeometryPanel({ crossAz, solarAz, declinationDeg, onEnlarge }: { crossAz: number; solarAz: number; declinationDeg: number; onEnlarge: () => void }) {
+  const { ref, size } = useContainerSize<HTMLDivElement>();
+  const w = Math.max(320, size.width || 520);
+  const h = Math.max(180, (size.height || 300) - 40);
+  const cx = w * 0.48, cy = h * 0.5, r = Math.min(w, h) * 0.28;
+  const axisTilt = Math.max(-23.4, Math.min(23.4, declinationDeg));
+  const axisRad = (-axisTilt * Math.PI) / 180;
+  const dx = Math.cos(axisRad) * r * 1.35;
+  const dy = Math.sin(axisRad) * r * 1.35;
+  return <div className='panel'><div className='panelHeader'><h4>Sun–Earth Geometry</h4><button onClick={onEnlarge}>Enlarge</button></div><div className='panelBody' ref={ref}><svg viewBox={`0 0 ${w} ${h}`} preserveAspectRatio='none'>
+    <rect x='0' y='0' width={w} height={h} fill='#f8fafc' />
+    {[0.18, 0.33, 0.48, 0.63, 0.78].map(f => <line key={f} x1={10} y1={h * f} x2={cx - r - 12} y2={h * f} stroke='#f59e0b' strokeWidth='1.6' />)}
+    <circle cx={cx} cy={cy} r={r} fill='#c7d2fe' stroke='#1e3a8a' strokeWidth='2' />
+    <path d={`M ${cx} ${cy - r} A ${r} ${r} 0 0 1 ${cx} ${cy + r}`} fill='#0f172a' opacity='0.65' />
+    <line x1={cx} y1={cy - r} x2={cx} y2={cy + r} stroke='#334155' strokeWidth='1.2' />
+    <line x1={cx - dx} y1={cy + dy} x2={cx + dx} y2={cy - dy} stroke='#16a34a' strokeWidth='2' />
+    <circle cx={cx + r * 0.76} cy={cy - r * 0.32} r='4' fill='#ef4444' />
+    <line x1={cx + r * 0.76} y1={cy - r * 0.32} x2={cx + r * 1.2} y2={cy - r * 0.65} stroke='#4f46e5' strokeWidth='1.8' />
+    <line x1={cx + r * 0.76} y1={cy - r * 0.32} x2={cx + r * 1.55} y2={cy - r * 0.32} stroke='#0891b2' strokeWidth='1.8' />
+    <text x='10' y='16' fontSize='11'>incoming sunlight</text>
+    <text x={w * 0.05} y={h - 10} fontSize='11'>Declination: {declinationDeg.toFixed(1)}°</text>
+    <text x={w * 0.42} y={h - 10} fontSize='11'>Cross az: {crossAz.toFixed(1)}°</text>
+    <text x={w * 0.68} y={h - 10} fontSize='11'>Solar az: {solarAz.toFixed(1)}°</text>
+  </svg></div></div>;
 }

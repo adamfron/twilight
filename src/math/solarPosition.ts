@@ -15,5 +15,5 @@ export function solarPositionUTC(date: Date, latDeg:number, lonDeg:number): Sola
   const lat = degToRad(latDeg);
   const elev = Math.asin(Math.sin(lat)*Math.sin(dec)+Math.cos(lat)*Math.cos(dec)*Math.cos(H));
   const az = Math.atan2(-Math.sin(H), Math.tan(dec)*Math.cos(lat)-Math.sin(lat)*Math.cos(H));
-  return { elevationDeg: radToDeg(elev), azimuthDeg: (radToDeg(az)+360)%360 };
+  return { elevationDeg: radToDeg(elev), azimuthDeg: (radToDeg(az)+360)%360, declinationDeg: radToDeg(dec) };
 }
