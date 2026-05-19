@@ -1,0 +1,1 @@
+export function TimelineDiagnosticsPanel({elev,az}:{elev:number;az:number}){return <div className='panel small'><h4>Solar Timeline & Diagnostics</h4><button>Enlarge</button><p>Elevation: {elev.toFixed(2)}°</p><p>Azimuth: {az.toFixed(2)}°</p></div>}
