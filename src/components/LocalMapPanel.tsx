@@ -9,7 +9,7 @@ function MapResizeWatcher({ watch }: { watch: string }) {
   return null;
 }
 
-export function LocalMapPanel({ lat, lon, crossAz, frontAz, onEnlarge, mapState }: { lat: number; lon: number; crossAz: number; frontAz: number; onEnlarge: () => void; mapState: string }) {
+export function LocalMapPanel({ lat, lon, crossAz, frontAz, onEnlarge, mapState, isMain }: { lat: number; lon: number; crossAz: number; frontAz: number; onEnlarge: () => void; mapState: string; isMain?: boolean }) {
   const { ref, size } = useContainerSize<HTMLDivElement>();
   const overlay = useMemo(() => {
     const w = Math.max(200, size.width), h = Math.max(130, size.height - 34);
@@ -27,13 +27,12 @@ export function LocalMapPanel({ lat, lon, crossAz, frontAz, onEnlarge, mapState 
     };
   }, [size.width, size.height, crossAz, frontAz]);
 
-  return <div className='panel'><div className='panelHeader'><h4>Local Map</h4><button onClick={onEnlarge}>Enlarge</button></div><div className='panelBody mapWrap' ref={ref}><MapContainer center={[lat, lon]} zoom={7} style={{ height: '100%', width: '100%' }} zoomControl={false} dragging={false} doubleClickZoom={false} scrollWheelZoom={false}><MapResizeWatcher watch={mapState + size.width} /><TileLayer attribution='&copy; OpenStreetMap contributors' url='https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png' /><Marker position={[lat, lon]} /></MapContainer>
+  return <div className='panel'><div className='panelHeader'><h4>Local Map (placeholder)</h4>{!isMain && <button onClick={onEnlarge}>Enlarge</button>}</div><div className='panelBody mapWrap' ref={ref}><MapContainer center={[lat, lon]} zoom={7} style={{ height: '100%', width: '100%' }} zoomControl={false} dragging={false} doubleClickZoom={false} scrollWheelZoom={false}><MapResizeWatcher watch={mapState + size.width} /><TileLayer attribution='&copy; OpenStreetMap contributors' url='https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png' /><Marker position={[lat, lon]} /></MapContainer>
     <svg className='mapOverlay' viewBox={`0 0 ${overlay.w} ${overlay.h}`} preserveAspectRatio='none'>
-      <polygon points={overlay.night} fill='#1e293b' opacity='0.18' />
       <line x1={overlay.front.split(' ')[0].split(',')[0]} y1={overlay.front.split(' ')[0].split(',')[1]} x2={overlay.front.split(' ')[1].split(',')[0]} y2={overlay.front.split(' ')[1].split(',')[1]} stroke='#16a34a' strokeWidth='2' strokeDasharray='8 5' />
       <polyline points={overlay.arrow} stroke='#2563eb' strokeWidth='3' fill='none' />
       <polygon points={`${overlay.w / 2 + Math.cos((crossAz - 90) * Math.PI / 180) * (Math.min(overlay.w, overlay.h) * 0.42)},${overlay.h / 2 + Math.sin((crossAz - 90) * Math.PI / 180) * (Math.min(overlay.w, overlay.h) * 0.42)} ${overlay.w / 2 + Math.cos((crossAz - 130) * Math.PI / 180) * (Math.min(overlay.w, overlay.h) * 0.34)},${overlay.h / 2 + Math.sin((crossAz - 130) * Math.PI / 180) * (Math.min(overlay.w, overlay.h) * 0.34)} ${overlay.w / 2 + Math.cos((crossAz - 50) * Math.PI / 180) * (Math.min(overlay.w, overlay.h) * 0.34)},${overlay.h / 2 + Math.sin((crossAz - 50) * Math.PI / 180) * (Math.min(overlay.w, overlay.h) * 0.34)}`} fill='#2563eb' />
       <circle cx={overlay.cx} cy={overlay.cy} r='5' fill='#ef4444' stroke='white' strokeWidth='1.5' />
-      <text x='8' y='14' fontSize='11'>shadow region</text>
+      <text x='8' y='14' fontSize='11'>Detailed Earth-shadow overlay planned.</text>
     </svg></div></div>;
 }

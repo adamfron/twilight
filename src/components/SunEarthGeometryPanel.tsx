@@ -1,6 +1,6 @@
 import { useContainerSize } from './useContainerSize';
 
-export function SunEarthGeometryPanel({ crossAz, solarAz, declinationDeg, onEnlarge }: { crossAz: number; solarAz: number; declinationDeg: number; onEnlarge: () => void }) {
+export function SunEarthGeometryPanel({ crossAz, solarAz, declinationDeg, onEnlarge, isMain }: { crossAz: number; solarAz: number; declinationDeg: number; onEnlarge: () => void; isMain?: boolean }) {
   const { ref, size } = useContainerSize<HTMLDivElement>();
   const w = Math.max(320, size.width || 520);
   const h = Math.max(180, (size.height || 300) - 40);
@@ -10,7 +10,7 @@ export function SunEarthGeometryPanel({ crossAz, solarAz, declinationDeg, onEnla
   const dx = Math.cos(axisRad) * r * 1.35;
   const dy = Math.sin(axisRad) * r * 1.35;
   const stationX = cx + r * 0.76, stationY = cy - r * 0.32;
-  return <div className='panel'><div className='panelHeader'><h4>Sun–Earth Geometry</h4><button onClick={onEnlarge}>Enlarge</button></div><div className='panelBody' ref={ref}><svg viewBox={`0 0 ${w} ${h}`} preserveAspectRatio='none'>
+  return <div className='panel'><div className='panelHeader'><h4>Sun–Earth Geometry (placeholder)</h4>{!isMain && <button onClick={onEnlarge}>Enlarge</button>}</div><div className='panelBody' ref={ref}><svg viewBox={`0 0 ${w} ${h}`} preserveAspectRatio='none'>
     <rect x='0' y='0' width={w} height={h} fill='#f8fafc' />
     {[0.18, 0.33, 0.48, 0.63, 0.78].map(f => <line key={f} x1={10} y1={h * f} x2={cx - r - 12} y2={h * f} stroke='#f59e0b' strokeWidth='1.6' />)}
     <circle cx={cx} cy={cy} r={r} fill='#c7d2fe' stroke='#1e3a8a' strokeWidth='2' />
@@ -27,6 +27,6 @@ export function SunEarthGeometryPanel({ crossAz, solarAz, declinationDeg, onEnla
     <text x={cx - r * 0.85} y={cy - r - 6} fontSize='10'>Earth axis</text>
     <text x={w * 0.05} y={h - 10} fontSize='11'>Declination: {declinationDeg.toFixed(1)}°</text>
     <text x={w * 0.42} y={h - 10} fontSize='11'>Cross az: {crossAz.toFixed(1)}°</text>
-    <text x={w * 0.68} y={h - 10} fontSize='11'>Solar az: {solarAz.toFixed(1)}°</text>
+    <text x={w * 0.68} y={h - 10} fontSize='11'>Solar az: {solarAz.toFixed(1)}°</text><text x='10' y={h - 24} fontSize='10'>Detailed Sun-Earth geometry overlay is planned.</text>
   </svg></div></div>;
 }

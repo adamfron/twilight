@@ -42,19 +42,20 @@ export default function App() {
     return `TWI0VIS_${site}_${ts.slice(0, 8)}T${ts.slice(9, 15)}Z_${modeCode}_${anchorCode}_${panelCode[main]}.png`;
   };
   const onPng = async () => {
-    const panel = document.querySelector('.left .panel .panelBody, .left .panel') as HTMLElement | null;
+    const panel = document.querySelector('.left .panel .panelBody') as HTMLElement | null;
     if (!panel) return setStatus('No active panel found.');
     try {
       const rect = panel.getBoundingClientRect();
       const clone = panel.cloneNode(true) as HTMLElement;
       clone.style.margin = '0';
+      clone.querySelectorAll('button').forEach(b => b.remove());
       const svg = `<svg xmlns='http://www.w3.org/2000/svg' width='${Math.round(rect.width)}' height='${Math.round(rect.height)}'><foreignObject width='100%' height='100%'>${new XMLSerializer().serializeToString(clone)}</foreignObject></svg>`;
       const img = new Image();
       img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
       await new Promise((res, rej) => { img.onload = res; img.onerror = rej; });
       const canvas = document.createElement('canvas'); canvas.width = Math.round(rect.width * 2); canvas.height = Math.round(rect.height * 2);
       const ctx = canvas.getContext('2d'); if (!ctx) return setStatus('PNG failed.');
-      ctx.scale(2, 2); ctx.drawImage(img, 0, 0);
+      ctx.scale(2, 2); ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, rect.width, rect.height); ctx.drawImage(img, 0, 0);
       canvas.toBlob(b => { if (!b) return setStatus('PNG failed.'); const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = exportName(); a.click(); setStatus('PNG exported from active panel.'); });
     } catch {
       setStatus(main === 'map' ? 'Map export may be blocked by tile security policy. Try cross/geometry/timeline.' : 'PNG export failed for this panel.');
@@ -63,8 +64,9 @@ export default function App() {
 
   const onCopy = async () => { const txt = `TWILIGHT\nStation: ${station.name}\nLat/Lon/Alt: ${station.latitude}, ${station.longitude}, ${station.altitudeM} m\nUTC: ${new Date(activeUtc + 'Z').toISOString()}\nMode: ${mode}\nAnchor: ${anchorDef.label}\nSolar elevation: ${solar.elevationDeg.toFixed(2)}\nSolar azimuth: ${solar.azimuthDeg.toFixed(2)}\nCross-section azimuth: ${crossAz.toFixed(2)}\nTerminator-front azimuth: ${frontAz.toFixed(2)}`; try { await navigator.clipboard.writeText(txt); setStatus('Copied results to clipboard'); } catch { setStatus(txt); } };
   const mapState = `${main}-${station.latitude.toFixed(3)}-${station.longitude.toFixed(3)}-${crossAz.toFixed(2)}`;
-  const diagnostics = results.map(r => ({ threshold: r.threshold.label, eventTime: mode === 'manual' ? '' : new Date(activeUtc + 'Z').toISOString().slice(11, 16), xGroundKm: r.xGroundKm, groundAngleDeg: r.groundAngleDeg, angleAt90Deg: r.angleAt90Deg, angleAt110Deg: r.angleAt110Deg, status: r.status }));
-  const panels = { cross: <CrossSectionPanel results={filteredResults} solarAz={solar.azimuthDeg} crossAz={crossAz} timeUTC={new Date(activeUtc + 'Z').toISOString()} showIonosphereBands={showIonosphereBands} showTwilightShading={showTwilightShading} onEnlarge={() => setMain('cross')} isMain={main === 'cross'} />, geometry: <SunEarthGeometryPanel crossAz={crossAz} solarAz={solar.azimuthDeg} declinationDeg={solar.declinationDeg} onEnlarge={() => setMain('geometry')} />, map: <LocalMapPanel lat={station.latitude} lon={station.longitude} crossAz={crossAz} frontAz={frontAz} onEnlarge={() => setMain('map')} mapState={mapState} />, timeline: <TimelineDiagnosticsPanel timeline={timeline} selectedHour={activeDate.getUTCHours() + activeDate.getUTCMinutes() / 60} elev={solar.elevationDeg} solarAz={solar.azimuthDeg} crossAz={crossAz} frontAz={frontAz} anchor={anchorDef} mode={mode} eventTime={mode === 'manual' ? '' : new Date(activeUtc + 'Z').toISOString().slice(11, 16)} status={status} diagnostics={diagnostics} onEnlarge={() => setMain('timeline')} isMain={main === 'timeline'} /> };
+  const diagnostics = results.filter(r => visibleThresholds.includes(r.threshold.key)).map(r => ({ threshold: r.threshold.label, eventTime: mode === 'manual' ? '' : new Date(activeUtc + 'Z').toISOString().slice(11, 16), xGroundKm: r.xGroundKm, groundAngleDeg: r.groundAngleDeg, angleAt90Deg: r.angleAt90Deg, angleAt110Deg: r.angleAt110Deg, status: r.status }));
+  const stationLocalTime = station.timeZone ? new Intl.DateTimeFormat('sv-SE', { timeZone: station.timeZone, year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false }).format(new Date(activeUtc + 'Z')).replace(' ', 'T') : 'N/A';
+  const panels = { cross: <CrossSectionPanel results={filteredResults} solarAz={solar.azimuthDeg} crossAz={crossAz} timeUTC={new Date(activeUtc + 'Z').toISOString()} timeLocal={stationLocalTime} showIonosphereBands={showIonosphereBands} showTwilightShading={showTwilightShading} onEnlarge={() => setMain('cross')} isMain={main === 'cross'} />, geometry: <SunEarthGeometryPanel crossAz={crossAz} solarAz={solar.azimuthDeg} declinationDeg={solar.declinationDeg} onEnlarge={() => setMain('geometry')} isMain={main === 'geometry'} />, map: <LocalMapPanel lat={station.latitude} lon={station.longitude} crossAz={crossAz} frontAz={frontAz} onEnlarge={() => setMain('map')} mapState={mapState} isMain={main === 'map'} />, timeline: <TimelineDiagnosticsPanel timeline={timeline} selectedHour={activeDate.getUTCHours() + activeDate.getUTCMinutes() / 60} elev={solar.elevationDeg} solarAz={solar.azimuthDeg} crossAz={crossAz} frontAz={frontAz} anchor={anchorDef} mode={mode} eventTime={mode === 'manual' ? '' : new Date(activeUtc + 'Z').toISOString().slice(11, 16)} status={status} diagnostics={diagnostics} onEnlarge={() => setMain('timeline')} isMain={main === 'timeline'} /> };
   const right = (['cross', 'geometry', 'map', 'timeline'] as PanelKey[]).filter(k => k !== main);
   return <div className='app'><header className='compactHeader'><h1><strong>TWILIGHT</strong> — Terminator Web Interface for Local Inclination Geometry, Heights & Twilight</h1></header>
     <InputBar stations={stations} stationId={stationId} onStation={setStationId} date={date} onDate={setDate} manualTime={manualTime} onManualTime={setManualTime} mode={mode} onMode={setMode} anchor={anchor} onAnchor={setAnchor} onCompute={onCompute} onHowTo={() => setHowTo(true)} visibleThresholds={visibleThresholds} onToggleThreshold={k => setVisibleThresholds(v => v.includes(k) ? v.filter(x => x !== k) : [...v, k])} />
