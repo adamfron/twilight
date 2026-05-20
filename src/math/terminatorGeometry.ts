@@ -16,7 +16,6 @@ const altitudeSamplesKm = [
 export function computeThresholdResult(eStationDeg:number,t:ThresholdDef):ThresholdResult{
   const curve=altitudeSamplesKm.map(z=>({z,x:xFromZAlpha(eStationDeg,z,t.angleDeg)}));
   const xGroundKm=xFromZAlpha(eStationDeg,0,t.angleDeg);
-  const groundAngle=tangentAt(0,(z)=>xFromZAlpha(eStationDeg,z,t.angleDeg));
   const status=Math.abs(xGroundKm)<1?'OK':'Projected to ground';
-  return { threshold:t, xGroundKm, groundAngleDeg:groundAngle?Math.abs(groundAngle):null, angleAt90Deg:tangentAt(90,(z)=>xFromZAlpha(eStationDeg,z,t.angleDeg)), angleAt110Deg:tangentAt(110,(z)=>xFromZAlpha(eStationDeg,z,t.angleDeg)), status, warnings:[], curve };
+  return { threshold:t, xGroundKm, groundAngleDeg:0.0, angleAt90Deg:tangentAt(90,(z)=>xFromZAlpha(eStationDeg,z,t.angleDeg)), angleAt110Deg:tangentAt(110,(z)=>xFromZAlpha(eStationDeg,z,t.angleDeg)), status, warnings:[], curve };
 }

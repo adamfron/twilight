@@ -20,7 +20,7 @@ export function CrossSectionPanel({ results, solarAz, crossAz, timeUTC, timeLoca
   const compact = !isMain;
   const m = { l: compact ? 44 : 64, r: 18, t: 20, b: compact ? 38 : 56 };
   const full = viewMode === 'full';
-  const xMin = full ? -2500 : -5, xMax = full ? 2500 : 5, yMin = 0, yMax = full ? 2000 : 5;
+  const xMin = full ? -2500 : -25, xMax = full ? 2500 : 25, yMin = 0, yMax = full ? 2000 : 25;
   const sx = (x: number) => m.l + ((x - xMin) / (xMax - xMin)) * (w - m.l - m.r);
   const sy = (y: number) => {
     const yy = full ? logAlt(y) : y;
@@ -28,10 +28,27 @@ export function CrossSectionPanel({ results, solarAz, crossAz, timeUTC, timeLoca
     const y1 = full ? logAlt(yMax) : yMax;
     return h - m.b - ((yy - y0) / (y1 - y0)) * (h - m.t - m.b);
   };
-  const xt = full ? [-2500, -1500, -500, 0, 500, 1500, 2500] : [-5, -2.5, 0, 2.5, 5];
-  const yt = full ? [0, 1, 2, 5, 10, 20, 50, 100, 200, 500, 1000, 2000] : [0, 1, 2, 3, 4, 5];
+  const xt = full ? [-2500, -1500, -500, 0, 500, 1500, 2500] : [-25, -10, 0, 10, 25];
+  const yt = full ? [0, 1, 2, 5, 10, 20, 50, 100, 200, 500, 1000, 2000] : [0, 5, 10, 15, 20, 25];
 
-  const clippedCurve = (curve: Array<{ x: number; z: number }>) => curve.map(p => ({ x: Math.min(xMax, Math.max(xMin, p.x)), z: Math.min(yMax, Math.max(yMin, p.z)) }));
+  const clippedCurve = (curve: Array<{ x: number; z: number }>) => {
+    const pts = curve.filter(p => ok(p.x) && ok(p.z));
+    if (!pts.length) return [];
+    const out: Array<{x:number;z:number}> = [];
+    const clip = (a:{x:number;z:number}, b:{x:number;z:number}) => ({ x: xMin, z: a.z + ((xMin - a.x) / (b.x - a.x)) * (b.z - a.z) });
+    for (let i=0;i<pts.length;i++){
+      const p = pts[i];
+      const q = pts[i+1];
+      const inside = p.x >= xMin && p.x <= xMax && p.z >= yMin && p.z <= yMax;
+      if (inside) out.push({x:p.x, z:Math.min(yMax, Math.max(yMin,p.z))});
+      if (!q) continue;
+      const crossesMin = (p.x < xMin && q.x > xMin) || (p.x > xMin && q.x < xMin);
+      const crossesMax = (p.x < xMax && q.x > xMax) || (p.x > xMax && q.x < xMax);
+      if (crossesMin && q.x !== p.x) out.push({x:xMin, z:Math.min(yMax, Math.max(yMin, p.z + ((xMin-p.x)/(q.x-p.x))*(q.z-p.z)))});
+      if (crossesMax && q.x !== p.x) out.push({x:xMax, z:Math.min(yMax, Math.max(yMin, p.z + ((xMax-p.x)/(q.x-p.x))*(q.z-p.z)))});
+    }
+    return out.sort((a,b)=>a.z-b.z);
+  };
   const visibleAngles = useMemo(() => results.filter(r => ok(r.xGroundKm) && r.xGroundKm >= xMin && r.xGroundKm <= xMax && r.groundAngleDeg != null), [results, xMin, xMax]);
 
   return <div className='panel'><div className='panelHeader'><h3>Vertical Cross-Section</h3><div className='headerControls'><div className='segmented'><button className={full ? 'active' : ''} onClick={() => setViewMode('full')}>Full profile</button><button className={!full ? 'active' : ''} onClick={() => setViewMode('ground')}>Ground zoom</button></div>{onEnlarge && !isMain && <button onClick={onEnlarge}>Enlarge</button>}</div></div><div className='panelBody' ref={ref}><svg preserveAspectRatio='none' viewBox={`0 0 ${w} ${h}`}>
@@ -42,7 +59,7 @@ export function CrossSectionPanel({ results, solarAz, crossAz, timeUTC, timeLoca
       const pts = clippedCurve(r.curve).filter(p => ok(p.x) && ok(p.z));
       if (pts.length < 2) return null;
       const path = `M ${sx(pts[0].x)} ${sy(0)} ` + pts.map(p => `L ${sx(p.x)} ${sy(p.z)}`).join(' ') + ` L ${sx(pts[pts.length - 1].x)} ${sy(0)} Z`;
-      return <path key={`shade-${r.threshold.key}`} d={path} fill='#334155' opacity='0.06' />;
+      return <path key={`shade-${r.threshold.key}`} d={path} fill='#1e293b' opacity='0.10' />;
     })}
     {results.map(r => { const pts = clippedCurve(r.curve).filter(p => ok(p.x) && ok(p.z)).map(p => `${sx(p.x)},${sy(p.z)}`).join(' '); return pts ? <polyline key={r.threshold.key} fill='none' stroke={r.threshold.color} strokeWidth={2.2} points={pts} /> : null; })}
     <line x1={sx(0)} y1={m.t} x2={sx(0)} y2={h - m.b} stroke='#475569' strokeDasharray='5 4' />
@@ -52,5 +69,5 @@ export function CrossSectionPanel({ results, solarAz, crossAz, timeUTC, timeLoca
     <text x={w / 2} y={h - 8} textAnchor='middle' fontSize={compact ? '10' : '12'}>{compact ? 'Dist. [km]' : 'Distance along terminator-normal [km]'}</text><text transform={`translate(16 ${h / 2}) rotate(-90)`} fontSize={compact ? '10' : '12'} textAnchor='middle'>{compact ? 'Alt. [km]' : 'Altitude [km]'}</text>
     {!compact && <>
     <text x={sx(full ? -2100 : -4.2)} y={m.t + 16} fontSize='11'>Toward daylight</text><text x={sx(full ? 1700 : 2.5)} y={m.t + 16} fontSize='11'>Toward night</text><text x={sx(0.3)} y={m.t + 30} fontSize='11'>Selected station line</text>
-    <rect x={w - 290} y={m.t + 10} width={262} height={88} fill='white' opacity='0.92' stroke='#cbd5e1' /><text x={w - 280} y={m.t + 26} fontSize='11'>solar azimuth: {ok(solarAz) ? solarAz.toFixed(2) : 'N/A'}°</text><text x={w - 280} y={m.t + 40} fontSize='11'>cross-section azimuth: {ok(crossAz) ? crossAz.toFixed(2) : 'N/A'}°</text><text x={w - 280} y={m.t + 54} fontSize='11'>UTC: {timeUTC}</text><text x={w - 280} y={m.t + 68} fontSize='11'>Local: {timeLocal}</text></>}</svg></div></div>;
+    <rect x={m.l + 10} y={m.t + 10} width={262} height={88} fill='white' opacity='0.92' stroke='#cbd5e1' /><text x={m.l + 20} y={m.t + 26} fontSize='11'>solar azimuth: {ok(solarAz) ? solarAz.toFixed(2) : 'N/A'}°</text><text x={m.l + 20} y={m.t + 40} fontSize='11'>cross-section azimuth: {ok(crossAz) ? crossAz.toFixed(2) : 'N/A'}°</text><text x={m.l + 20} y={m.t + 54} fontSize='11'>UTC: {timeUTC}</text><text x={m.l + 20} y={m.t + 68} fontSize='11'>Local: {timeLocal}</text></>}</svg></div></div>;
 }

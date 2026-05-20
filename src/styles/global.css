@@ -35,4 +35,9 @@ ul{margin:4px 0;padding-left:16px}.modalOverlay{position:fixed;inset:0;backgroun
 @media (max-width: 980px){.app{max-height:none}.right{grid-template-rows:none}main{grid-template-columns:1fr;overflow:visible}.compactHeader h1{font-size:.92rem}}
 
 .headerControls{display:flex;gap:6px;align-items:center}
-.panelBody{overflow:auto}
+.panelBody{overflow:hidden}
+
+.timelineSplit{display:grid;grid-template-columns:1.3fr 1fr;grid-template-rows:auto auto;gap:6px;align-items:start}
+.timelineSplit svg{grid-column:1;grid-row:1 / span 2;min-height:180px}
+.timelineSplit table{grid-column:2}
+.timelineStack{display:grid;grid-template-rows:minmax(220px,1.2fr) auto auto;gap:6px}
