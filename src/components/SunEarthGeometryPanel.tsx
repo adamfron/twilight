@@ -1,6 +1,6 @@
 import { useContainerSize } from './useContainerSize';
 
-export function SunEarthGeometryPanel({ crossAz, solarAz, declinationDeg, onEnlarge, isMain }: { crossAz: number; solarAz: number; declinationDeg: number; onEnlarge: () => void; isMain?: boolean }) {
+export function SunEarthGeometryPanel({ crossAz, solarAz, declinationDeg, onEnlarge, isMain }: { crossAz: number; solarAz: number; declinationDeg: number; onEnlarge?: () => void; isMain?: boolean }) {
   const { ref, size } = useContainerSize<HTMLDivElement>();
   const w = Math.max(320, size.width || 520);
   const h = Math.max(180, (size.height || 300) - 40);
@@ -10,7 +10,7 @@ export function SunEarthGeometryPanel({ crossAz, solarAz, declinationDeg, onEnla
   const dx = Math.cos(axisRad) * r * 1.35;
   const dy = Math.sin(axisRad) * r * 1.35;
   const stationX = cx + r * 0.76, stationY = cy - r * 0.32;
-  return <div className='panel'><div className='panelHeader'><h4>Sun–Earth Geometry (placeholder)</h4>{!isMain && <button onClick={onEnlarge}>Enlarge</button>}</div><div className='panelBody' ref={ref}><svg viewBox={`0 0 ${w} ${h}`} preserveAspectRatio='none'>
+  return <div className='panel'><div className='panelHeader'><h4>Sun–Earth Geometry (placeholder)</h4>{!isMain && onEnlarge && <button onClick={onEnlarge}>Enlarge</button>}</div><div className='panelBody' ref={ref}><svg viewBox={`0 0 ${w} ${h}`} preserveAspectRatio='none'>
     <rect x='0' y='0' width={w} height={h} fill='#f8fafc' />
     {[0.18, 0.33, 0.48, 0.63, 0.78].map(f => <line key={f} x1={10} y1={h * f} x2={cx - r - 12} y2={h * f} stroke='#f59e0b' strokeWidth='1.6' />)}
     <circle cx={cx} cy={cy} r={r} fill='#c7d2fe' stroke='#1e3a8a' strokeWidth='2' />

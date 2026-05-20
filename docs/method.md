@@ -10,3 +10,5 @@ Core formulas:
 - Threshold curve: x(z, alpha) = R * (e_station + delta(z) - alpha)
 
 This is a geometric operational visualization, not a radiative-transfer brightness model.
+
+- In this spherical tangent model, each threshold curve x(z, alpha) differs only by a horizontal translation in x for each alpha. Therefore, the local slope (and derived inclination angle) is identical at a given altitude across thresholds; at ground, the model reports ∠ground = 0.0°.

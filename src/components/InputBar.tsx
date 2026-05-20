@@ -5,6 +5,12 @@ interface P {
   stations: Station[];
   stationId: string;
   onStation: (s: string) => void;
+  customLat: number;
+  customLon: number;
+  customAltM: number;
+  onCustomLat: (v:number)=>void;
+  onCustomLon: (v:number)=>void;
+  onCustomAltM: (v:number)=>void;
   date: string;
   onDate: (v: string) => void;
   manualTime: string;
@@ -35,7 +41,12 @@ const anchors: Array<{ value: string; label: string; color: string; key: Thresho
 export function InputBar(p: P) {
   return <div className='inputBar'>
     <div className='controlRow compact'>
-      <select value={p.stationId} onChange={e => p.onStation(e.target.value)}>{p.stations.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}</select>
+      <select value={p.stationId} onChange={e => p.onStation(e.target.value)}>{p.stations.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}<option value='custom'>Custom position</option></select>
+      {p.stationId === 'custom' && <>
+        <input type='number' step='0.0001' value={p.customLat} onChange={e => p.onCustomLat(Number(e.target.value))} placeholder='Latitude' />
+        <input type='number' step='0.0001' value={p.customLon} onChange={e => p.onCustomLon(Number(e.target.value))} placeholder='Longitude' />
+        <input type='number' step='1' value={p.customAltM} onChange={e => p.onCustomAltM(Number(e.target.value))} placeholder='Altitude [m]' />
+      </>}
       <input type='date' value={p.date} onChange={e => p.onDate(e.target.value)} />
       {p.mode === 'manual' && <input type='time' step={60} value={p.manualTime} onChange={e => p.onManualTime(e.target.value)} />}
       <div className='segmented'>{modes.map(m => <button key={m.key} className={p.mode === m.key ? 'active' : ''} onClick={() => p.onMode(m.key)}>{m.label}</button>)}</div>
